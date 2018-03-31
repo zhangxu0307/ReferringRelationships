@@ -95,9 +95,10 @@ class ReferringRelationshipsModel():
 
         # Generate the embedding and image feature layers.
         im_features = self.build_image_model(input_im)
-        subj_obj_embedding = self.build_embedding_layer(
+        subj_obj_embedding = self.build_embedding_layer(  
+            # 这里的self.num_objects为什么是1，不应该是物体个数，只是用数字表示物体类别，而不是one-hot那样
             self.num_objects, self.embedding_dim)
-        embedded_subject = subj_obj_embedding(input_subj)
+        embedded_subject = subj_obj_embedding(input_subj) # subj和obj是一个嵌入层
         embedded_subject = Dense(self.hidden_dim, activation="relu")(
             embedded_subject)
         embedded_subject = Dropout(self.dropout)(embedded_subject)
@@ -177,7 +178,7 @@ class ReferringRelationshipsModel():
             A list of length `self.num_predicates` convolution modules.
         """
         predicate_modules = []
-        for k in range(self.num_predicates):
+        for k in range(self.num_predicates): # 每个谓词都有一套卷积层
             predicate_module_group = []
             for i in range(self.nb_conv_att_map-1):
                 predicate_conv = Conv2D(
@@ -216,7 +217,7 @@ class ReferringRelationshipsModel():
                 att_map = conv_module(att_map)
             conv_outputs.append(att_map)
         merged_output = Concatenate(axis=3)(conv_outputs)
-        predicate_att = Multiply()([predicate_masks, merged_output])
+        predicate_att = Multiply()([predicate_masks, merged_output]) # mask是one-hot吗，如果是这里其他组的通道就是0了啊
         predicate_att = Lambda(lambda x: K.sum(x, axis=3, keepdims=True))(predicate_att)
         predicate_att = Activation("tanh")(predicate_att)
         return predicate_att
