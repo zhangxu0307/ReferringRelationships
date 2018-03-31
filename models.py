@@ -88,7 +88,7 @@ class ReferringRelationshipsModel():
         input_subj = Input(shape=(1,))
         input_obj = Input(shape=(1,))
         if self.use_predicate:
-            input_pred = Input(shape=(self.num_predicates,))
+            input_pred = Input(shape=(self.num_predicates,)) # 输入谓词是一个多维的，是谓词的个数吗？
             inputs=[input_im, input_subj, input_pred, input_obj]
         else:
             inputs=[input_im, input_subj, input_obj]
@@ -297,10 +297,10 @@ class ReferringRelationshipsModel():
                 layer.trainable = False
                 layer.training = False
         output = base_model.get_layer(self.feat_map_layer).output
-        image_branch = Model(inputs=base_model.input, outputs=output)
+        image_branch = Model(inputs=base_model.input, outputs=output) 
         im_features = image_branch(input_im)
         im_features = Dropout(self.dropout)(im_features)
-        for i in range(self.nb_conv_im_map):
+        for i in range(self.nb_conv_im_map): # 这里又进行了多次卷积，是为了让channel从512升到1024？
             im_features = Conv2D(self.hidden_dim, self.conv_im_kernel,
                                  strides=(1, 1), padding='same',
                                  activation='relu')(im_features)
